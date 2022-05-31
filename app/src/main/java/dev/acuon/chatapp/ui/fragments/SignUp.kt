@@ -8,7 +8,6 @@ import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -19,14 +18,14 @@ import dev.acuon.chatapp.R
 import dev.acuon.chatapp.databinding.FragmentSignUpBinding
 import dev.acuon.chatapp.model.User
 import dev.acuon.chatapp.ui.HomePage
+import dev.acuon.chatapp.utils.Constants
+import dev.acuon.chatapp.utils.toast
 import java.util.regex.Pattern
-
 
 class SignUp : Fragment() {
     private lateinit var binding: FragmentSignUpBinding
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mDbRef: DatabaseReference
-    private val expression = "^[\\w.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$"
     private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -35,7 +34,6 @@ class SignUp : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentSignUpBinding.inflate(inflater, container, false)
-        // Inflate the layout for this fragment
         return binding.root
     }
 
@@ -43,7 +41,10 @@ class SignUp : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         mAuth = FirebaseAuth.getInstance()
 
-        sharedPreferences = activity?.applicationContext!!.getSharedPreferences("currentUser", AppCompatActivity.MODE_PRIVATE)
+        sharedPreferences = activity?.applicationContext!!.getSharedPreferences(
+            Constants.SHARED_PREFERENCE_KEY,
+            AppCompatActivity.MODE_PRIVATE
+        )
 
         binding.apply {
             signUpLoginBtn.setOnClickListener {
@@ -63,15 +64,17 @@ class SignUp : Fragment() {
                 if (signUpPassword.transformationMethod
                         .equals(PasswordTransformationMethod.getInstance())
                 ) {
-                    signUpPassword.transformationMethod = HideReturnsTransformationMethod.getInstance()
-                    showHideBtn.text = "Hide"
+                    signUpPassword.transformationMethod =
+                        HideReturnsTransformationMethod.getInstance()
+                    showHideBtn.text = Constants.HIDE
                 } else {
                     signUpPassword.transformationMethod = PasswordTransformationMethod.getInstance()
-                    showHideBtn.text = "Show"
+                    showHideBtn.text = Constants.SHOW
                 }
             }
         }
     }
+
     private fun signUp(name: String, email: String, password: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(requireActivity()) { task ->
@@ -85,14 +88,14 @@ class SignUp : Fragment() {
                     val intent = Intent(requireContext(), HomePage::class.java)
                     activity?.finish()
                     startActivity(intent)
-                    toast("Sign-Up Successful")
+                    toast(requireContext(), "Sign-Up Successful")
                 } else {
                     binding.apply {
                         signUpLayout.alpha = 1f
                         progressbar.visibility = View.GONE
                     }
                     // If sign in fails, display a message to the user.
-                    toast("Some Error Occurred")
+                    toast(requireContext(), "Some Error Occurred")
                 }
             }
     }
@@ -106,7 +109,10 @@ class SignUp : Fragment() {
 
     private fun saveToSharedPreference(email: String?, password: String?) {
         if (sharedPreferences == null)
-            sharedPreferences = activity?.applicationContext!!.getSharedPreferences("currentUser", AppCompatActivity.MODE_PRIVATE)
+            sharedPreferences = activity?.applicationContext!!.getSharedPreferences(
+                Constants.SHARED_PREFERENCE_KEY,
+                AppCompatActivity.MODE_PRIVATE
+            )
 
         sharedPreferencesEditor = sharedPreferences.edit()
         sharedPreferencesEditor.putString("email", email)
@@ -159,16 +165,12 @@ class SignUp : Fragment() {
 
     private fun isValidEmail(email: CharSequence): Boolean {
         var isValid = true
-        val pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE)
+        val pattern = Pattern.compile(Constants.EMAIL_EXPRESSION, Pattern.CASE_INSENSITIVE)
         val matcher = pattern.matcher(email)
         if (!matcher.matches()) {
             isValid = false
         }
         return isValid
-    }
-
-    private fun toast(str: String) {
-        Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
     }
 
     private fun openFragment(fragment: Fragment) {

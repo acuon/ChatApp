@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import dev.acuon.chatapp.R
 import dev.acuon.chatapp.ui.fragments.Login
+import dev.acuon.chatapp.utils.Constants
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,16 +18,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        sharedPreferences = getSharedPreferences("currentUser", MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCE_KEY, MODE_PRIVATE)
         mAuth = FirebaseAuth.getInstance()
         checkLogin()
     }
     private fun checkLogin() {
         if (sharedPreferences == null) {
-            sharedPreferences = getSharedPreferences("currentUser", MODE_PRIVATE)
+            sharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCE_KEY, MODE_PRIVATE)
         }
-        val email: String = sharedPreferences.getString("email", "")!!
-        val password: String = sharedPreferences.getString("password", "")!!
+        val email: String = sharedPreferences.getString(Constants.EMAIL, "")!!
+        val password: String = sharedPreferences.getString(Constants.PASSWORD, "")!!
         if (email != null && email != "" && password != null && password != "") {
             login(email, password)
         } else {

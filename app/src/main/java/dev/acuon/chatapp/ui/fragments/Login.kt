@@ -16,13 +16,13 @@ import com.google.firebase.auth.FirebaseAuth
 import dev.acuon.chatapp.R
 import dev.acuon.chatapp.databinding.FragmentLoginBinding
 import dev.acuon.chatapp.ui.HomePage
+import dev.acuon.chatapp.utils.Constants
+import dev.acuon.chatapp.utils.toast
 import java.util.regex.Pattern
-
 
 class Login : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private lateinit var mAuth: FirebaseAuth
-    private val expression = "^[\\w.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$"
     private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -31,7 +31,6 @@ class Login : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
-        // Inflate the layout for this fragment
         return binding.root
     }
 
@@ -39,7 +38,10 @@ class Login : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mAuth = FirebaseAuth.getInstance()
-        sharedPreferences = activity?.applicationContext!!.getSharedPreferences("currentUser", AppCompatActivity.MODE_PRIVATE)
+        sharedPreferences = activity?.applicationContext!!.getSharedPreferences(
+            Constants.SHARED_PREFERENCE_KEY,
+            AppCompatActivity.MODE_PRIVATE
+        )
 
         binding.apply {
             loginSignUpBtn.setOnClickListener {
@@ -58,11 +60,12 @@ class Login : Fragment() {
                 if (loginPassword.transformationMethod
                         .equals(PasswordTransformationMethod.getInstance())
                 ) {
-                    loginPassword.transformationMethod = HideReturnsTransformationMethod.getInstance()
-                    showHideBtn.text = "Hide"
+                    loginPassword.transformationMethod =
+                        HideReturnsTransformationMethod.getInstance()
+                    showHideBtn.text = Constants.HIDE
                 } else {
                     loginPassword.transformationMethod = PasswordTransformationMethod.getInstance()
-                    showHideBtn.text = "Show"
+                    showHideBtn.text = Constants.SHOW
                 }
             }
         }
@@ -84,19 +87,16 @@ class Login : Fragment() {
                         loginLayout.alpha = 1f
                         progressbar.visibility = View.GONE
                     }
-                    toast("User does not exist")
+                    toast(requireContext(), "User does not exist")
                 }
             }
     }
 
     private fun saveToSharedPreference(email: String?, password: String?) {
-        if (sharedPreferences == null)
-            sharedPreferences = activity?.applicationContext!!.getSharedPreferences("currentUser", AppCompatActivity.MODE_PRIVATE)
-
         sharedPreferencesEditor = sharedPreferences.edit()
-        sharedPreferencesEditor.putString("email", email)
-        sharedPreferencesEditor.putString("password", password)
-        sharedPreferencesEditor.commit();
+        sharedPreferencesEditor.putString(Constants.EMAIL, email)
+        sharedPreferencesEditor.putString(Constants.PASSWORD, password)
+        sharedPreferencesEditor.commit()
     }
 
     private fun emptyCheck(): Boolean {
@@ -131,7 +131,7 @@ class Login : Fragment() {
 
     private fun isValidEmail(email: CharSequence): Boolean {
         var isValid = true
-        val pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE)
+        val pattern = Pattern.compile(Constants.EMAIL_EXPRESSION, Pattern.CASE_INSENSITIVE)
         val matcher = pattern.matcher(email)
         if (!matcher.matches()) {
             isValid = false
@@ -145,9 +145,6 @@ class Login : Fragment() {
             R.id.frameLayout_for_Fragments,
             fragment
         ).commit()
-    }
-    private fun toast(str: String) {
-        Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
     }
 
 }

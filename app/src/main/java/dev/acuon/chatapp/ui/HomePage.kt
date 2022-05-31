@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,6 +60,20 @@ class HomePage : AppCompatActivity(), UserClickListener {
             }
 
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == R.id.logout) {
+            mAuth.signOut()
+            finish()
+            return true
+        }
+        return true
     }
 
     override fun onClick(position: Int) {
